@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .profile-info {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .profile-info p {
+            margin: 8px 0;
+        }
+        .actions {
+            margin-top: 20px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            margin-right: 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            color: white;
+        }
+        .btn-edit {
+            background-color: #ffa500;
+        }
+        .btn-delete {
+            background-color: #ff4444;
+        }
+        .btn-logout {
+            background-color: #666;
+        }
+        a {
+            color: #0066cc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Профиль пользователя</h1>
+
+    <div class="profile-info">
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Имя:</strong> {{ user.first_name }}</p>
+        <p><strong>Фамилия:</strong> {{ user.last_name }}</p>
+        {% if user.patronymic %}
+            <p><strong>Отчество:</strong> {{ user.patronymic }}</p>
+        {% endif %}
+        <p><strong>Дата регистрации:</strong> {{ user.date_joined|date:"d.m.Y H:i" }}</p>
+    </div>
+
+    <div class="actions">
+        <a href="{% url 'users:profile-update' %}" class="btn btn-edit">Редактировать</a>
+        <a href="{% url 'users:profile-delete' %}" class="btn btn-delete">Удалить аккаунт</a>
+        <a href="{% url 'users:logout' %}" class="btn btn-logout">Выйти</a>
+    </div>
+</body>
+</html>

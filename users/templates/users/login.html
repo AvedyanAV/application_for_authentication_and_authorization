@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Регистрация</title>
+    <title>Вход в систему</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -32,7 +32,7 @@
             border-radius: 4px;
         }
         button {
-            background-color: #4CAF50;
+            background-color: #0066cc;
             color: white;
             padding: 10px 20px;
             border: none;
@@ -40,7 +40,7 @@
             cursor: pointer;
         }
         button:hover {
-            background-color: #45a049;
+            background-color: #0052a3;
         }
         a {
             color: #0066cc;
@@ -48,11 +48,11 @@
     </style>
 </head>
 <body>
-    <h1>Регистрация</h1>
+    <h1>Вход в систему</h1>
 
     {% if form.errors %}
         <div class="error">
-            <strong>Пожалуйста, исправьте ошибки:</strong>
+            <strong>Ошибка входа:</strong>
             {% for field, errors in form.errors.items %}
                 {% for error in errors %}
                     <p>{{ error }}</p>
@@ -67,24 +67,12 @@
         <label for="{{ form.email.id_for_label }}">Email:</label>
         {{ form.email }}
 
-        <label for="{{ form.first_name.id_for_label }}">Имя:</label>
-        {{ form.first_name }}
+        <label for="{{ form.password.id_for_label }}">Пароль:</label>
+        {{ form.password }}
 
-        <label for="{{ form.last_name.id_for_label }}">Фамилия:</label>
-        {{ form.last_name }}
-
-        <label for="{{ form.patronymic.id_for_label }}">Отчество (необязательно):</label>
-        {{ form.patronymic }}
-
-        <label for="{{ form.password1.id_for_label }}">Пароль:</label>
-        {{ form.password1 }}
-
-        <label for="{{ form.password2.id_for_label }}">Повторите пароль:</label>
-        {{ form.password2 }}
-
-        <button type="submit">Зарегистрироваться</button>
+        <button type="submit">Войти</button>
     </form>
 
-    <p>Уже есть аккаунт? <a href="{% url 'users:login' %}">Войти</a></p>
+    <p>Ещё нет аккаунта? <a href="{% url 'users:register' %}">Зарегистрироваться</a></p>
 </body>
 </html>
