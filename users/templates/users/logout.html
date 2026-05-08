@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выход</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        a {
+            color: #0066cc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Вы вышли из системы</h1>
+    <p>Вы успешно вышли из своей учётной записи.</p>
+    <p>
+        <a href="{% url 'users:login' %}">Войти снова</a> |
+        <a href="{% url 'users:register' %}">Зарегистрироваться</a>
+    </p>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Удаление аккаунта</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #ff4444;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .error {
+            color: red;
+            border: 1px solid red;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0 15px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .btn-delete {
+            background-color: #ff4444;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-delete:hover {
+            background-color: #cc0000;
+        }
+        .btn-cancel {
+            display: inline-block;
+            background-color: #666;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Удаление аккаунта</h1>
+
+    <div class="warning">
+        <strong>⚠️ Внимание!</strong>
+        <p>Вы собираетесь удалить свой аккаунт. Это действие нельзя отменить.</p>
+        <p>Ваши данные будут сохранены, но вы больше не сможете войти в систему.</p>
+        <p>Для восстановления доступа обратитесь в поддержку.</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <label for="password">Введите пароль для подтверждения:</label>
+        <input type="password" id="password" name="password" placeholder="Ваш пароль" required>
+
+        <button type="submit" class="btn-delete">Удалить аккаунт</button>
+    </form>
+
+    <p>
+        <a href="{% url 'users:profile' %}" class="btn-cancel">← Отмена</a>
+    </p>
+</body>
+</html>
