@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Документы</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 30px auto; padding: 20px; }
+        h1 { color: #333; border-bottom: 2px solid #0066cc; padding-bottom: 10px; }
+        .nav { margin-bottom: 20px; }
+        .nav a { color: #0066cc; text-decoration: none; margin-right: 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background-color: #0066cc; color: white; padding: 12px; text-align: left; }
+        td { padding: 10px 12px; border-bottom: 1px solid #ddd; }
+        tr:hover { background-color: #f5f5f5; }
+        .badge { padding: 3px 8px; border-radius: 3px; font-size: 12px; color: white; }
+        .badge-public { background-color: #4CAF50; }
+        .badge-restricted { background-color: #ffa500; }
+        .badge-confidential { background-color: #ff4444; }
+        .no-access { color: #999; font-style: italic; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="{% url 'users:profile' %}">← Профиль</a>
+        <a href="{% url 'users:documents' %}">📄 Документы</a>
+        <a href="{% url 'users:projects' %}">📁 Проекты</a>
+        <a href="{% url 'users:reports' %}">📊 Отчёты</a>
+        <a href="{% url 'users:logout' %}">Выйти</a>
+    </div>
+
+    <h1>📄 Документы</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Название</th>
+                <th>Автор</th>
+                <th>Статус</th>
+                <th>Уровень доступа</th>
+                <th>Дата</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doc in documents %}
+            <tr>
+                <td>{{ doc.id }}</td>
+                <td>{{ doc.title }}</td>
+                <td>{{ doc.author }}</td>
+                <td>{{ doc.status }}</td>
+                <td>
+                    {% if doc.access_level == 'public' %}
+                        <span class="badge badge-public">Публичный</span>
+                    {% elif doc.access_level == 'restricted' %}
+                        <span class="badge badge-restricted">Ограниченный</span>
+                    {% elif doc.access_level == 'confidential' %}
+                        <span class="badge badge-confidential">Конфиденциально</span>
+                    {% endif %}
+                </td>
+                <td>{{ doc.created }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" style="text-align: center; color: #999;">Нет доступных документов</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

@@ -105,5 +105,14 @@
             <a href="/admin/users/role/" class="btn btn-admin">⚙ Управление ролями</a>
         {% endif %}
     </div>
+    <div class="actions" style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 15px;">
+        <strong style="display: block; margin-bottom: 10px;">Бизнес-приложение (Mock):</strong>
+        <a href="{% url 'users:documents' %}" class="btn" style="background-color: #4CAF50;">📄 Документы</a>
+        <a href="{% url 'users:projects' %}" class="btn" style="background-color: #2196F3;">📁 Проекты</a>
+
+        {% if can_view_all_users %}
+            <a href="{% url 'users:reports' %}" class="btn" style="background-color: #ff9800;">📊 Отчёты</a>
+        {% endif %}
+    </div>
 </body>
 </html>

@@ -6,6 +6,8 @@ from django.urls import reverse_lazy
 from django.contrib.auth import login, logout
 from django.shortcuts import render, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+
+from .mock_data import filter_by_access_level, DOCUMENTS, PROJECTS, REPORTS
 from .models import User
 from .forms import UserRegistrationForm, UserLoginForm
 
@@ -160,3 +162,107 @@ class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         context['active_count'] = User.objects.filter(is_active=True).count()
         context['inactive_count'] = User.objects.filter(is_active=False).count()
         return context
+
+
+class BusinessBaseView(LoginRequiredMixin, View):
+    """ Базовый класс для бизнес-представлений."""
+    required_permission = None
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            if request.headers.get('Accept') == 'application/json':
+                return JsonResponse({
+                    'error': 'Требуется аутентификация',
+                    'error_type': 'authentication_required'
+                }, status=401)
+            return redirect(f"{reverse_lazy('users:login')}?next={request.path}")
+
+        if self.required_permission and not request.user.has_permission(self.required_permission):
+            if request.headers.get('Accept') == 'application/json':
+                return JsonResponse({
+                    'error': 'Доступ запрещён',
+                    'detail': f'Требуется право: {self.required_permission}',
+                    'error_type': 'permission_denied'
+                }, status=403)
+            return render(request, 'users/error_403.html', status=403)
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_user_roles(self):
+        """Получает список ролей пользователя."""
+        return list(self.request.user.get_roles().values_list('name', flat=True))
+
+
+class DocumentListView(BusinessBaseView):
+    """Список документов."""
+    required_permission = 'users.view_self'
+
+    def get(self, request):
+        roles = self.get_user_roles()
+        documents = filter_by_access_level(DOCUMENTS, request.user.email, roles)
+
+        if request.headers.get('Accept') == 'application/json':
+            return JsonResponse({'documents': documents}, status=200)
+
+        return render(request, 'users/documents.html', {
+            'documents': documents,
+            'user': request.user,
+            'roles': roles
+        })
+
+
+class ProjectListView(BusinessBaseView):
+    """Список проектов."""
+    required_permission = 'users.view_self'
+
+    def get(self, request):
+        roles = self.get_user_roles()
+        user_email = request.user.email
+
+        if 'Admin' in roles:
+            projects = PROJECTS
+        elif 'Moderator' in roles:
+            projects = [p for p in PROJECTS
+                        if p['manager'] == user_email or user_email in p.get('team', [])]
+        else:
+            projects = [p for p in PROJECTS
+                        if p['manager'] == user_email or user_email in p.get('team', [])]
+
+        if request.headers.get('Accept') == 'application/json':
+            return JsonResponse({'projects': projects}, status=200)
+
+        return render(request, 'users/projects.html', {
+            'projects': projects,
+            'user': request.user,
+            'roles': roles
+        })
+
+
+class ReportListView(BusinessBaseView):
+    """Список отчётов."""
+    required_permission = 'users.view_all'
+
+    def get(self, request):
+        roles = self.get_user_roles()
+
+        if 'Admin' in roles or 'Moderator' in roles:
+            reports = REPORTS
+        else:
+            if request.headers.get('Accept') == 'application/json':
+                return JsonResponse({
+                    'error': 'Доступ запрещён',
+                    'detail': 'Отчёты доступны только администраторам и модераторам',
+                    'error_type': 'permission_denied'
+                }, status=403)
+            return render(request, 'users/error_403.html', {
+                'message': 'Отчёты доступны только администраторам и модераторам'
+            }, status=403)
+
+        if request.headers.get('Accept') == 'application/json':
+            return JsonResponse({'reports': reports}, status=200)
+
+        return render(request, 'users/reports.html', {
+            'reports': reports,
+            'user': request.user,
+            'roles': roles
+        })
