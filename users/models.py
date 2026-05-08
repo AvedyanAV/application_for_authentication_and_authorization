@@ -85,15 +85,169 @@ class User(AbstractBaseUser, PermissionsMixin):
     def soft_delete(self):
         """Мягкое удаление"""
         self.is_active = False
-        self.deleted_at = timezone.now()
-        self.save(update_fields=['is_active', 'deleted_at'])
+        self.save(update_fields=['is_active', ])
 
     def restore(self):
         """Восстановление после мягкого удаления"""
         self.is_active = True
-        self.deleted_at = None
-        self.save(update_fields=['is_active', 'deleted_at'])
+        self.save(update_fields=['is_active', ])
 
-    def is_soft_deleted(self):
-        """Проверка на мягкое удаление"""
-        return not self.is_active and self.deleted_at is not None
+    def get_roles(self):
+        """Возвращает QuerySet ролей пользователя."""
+        return Role.objects.filter(user_roles__user=self)
+
+    def get_permissions(self):
+        """Возвращает QuerySet разрешений пользователя."""
+        return Permission.objects.filter(
+            rolepermission__role__user_roles__user=self
+        ).distinct()
+
+    def has_permission(self, permission_codename):
+        """Проверяет, есть ли у пользователя конкретное разрешение."""
+        if self.is_superuser:
+            return True
+
+        return self.get_permissions().filter(codename=permission_codename).exists()
+
+    def has_role(self, role_name):
+        """Проверяет, есть ли у пользователя конкретная роль."""
+        return self.get_roles().filter(name=role_name).exists()
+
+
+class Permission(models.Model):
+    """Разрешение на выполнение действия над ресурсом."""
+    codename = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name='Кодовое имя'
+    )
+    name = models.CharField(
+        max_length=255,
+        verbose_name='Название'
+    )
+    description = models.TextField(
+        blank=True,
+        verbose_name='Описание'
+    )
+    resource = models.CharField(
+        max_length=100,
+        verbose_name='Ресурс'
+    )
+    action = models.CharField(
+        max_length=100,
+        verbose_name='Действие'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Создано'
+    )
+
+    class Meta:
+        verbose_name = 'Разрешение'
+        verbose_name_plural = 'Разрешения'
+        ordering = ['resource', 'action']
+        indexes = [
+            models.Index(fields=['codename']),
+            models.Index(fields=['resource', 'action']),
+        ]
+
+    def __str__(self):
+        return f"{self.name} ({self.codename})"
+
+
+class Role(models.Model):
+    """Роль пользователя с набором разрешений."""
+    name = models.CharField(
+        max_length=150,
+        unique=True,
+        verbose_name='Название'
+    )
+    description = models.TextField(
+        blank=True,
+        verbose_name='Описание'
+    )
+    permissions = models.ManyToManyField(
+        Permission,
+        through='RolePermission',
+        verbose_name='Разрешения',
+        related_name='roles'
+    )
+    is_system = models.BooleanField(
+        default=False,
+        verbose_name='Системная роль',
+        help_text='Системные роли нельзя удалить'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Создано'
+    )
+
+    class Meta:
+        verbose_name = 'Роль'
+        verbose_name_plural = 'Роли'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class RolePermission(models.Model):
+    """Промежуточная таблица для связи Role-Permission."""
+    role = models.ForeignKey(
+        Role,
+        on_delete=models.CASCADE,
+        verbose_name='Роль'
+    )
+    permission = models.ForeignKey(
+        Permission,
+        on_delete=models.CASCADE,
+        verbose_name='Разрешение'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Назначено'
+    )
+
+    class Meta:
+        verbose_name = 'Разрешение роли'
+        verbose_name_plural = 'Разрешения ролей'
+        unique_together = [['role', 'permission']]
+
+    def __str__(self):
+        return f"{self.role.name} → {self.permission.codename}"
+
+
+class UserRole(models.Model):
+    """Связь пользователя с ролью."""
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Пользователь',
+        related_name='user_roles'
+    )
+    role = models.ForeignKey(
+        Role,
+        on_delete=models.CASCADE,
+        verbose_name='Роль',
+        related_name='user_roles'
+    )
+    assigned_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Назначена'
+    )
+    assigned_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Кем назначена',
+        related_name='assigned_roles'
+    )
+
+    class Meta:
+        verbose_name = 'Роль пользователя'
+        verbose_name_plural = 'Роли пользователей'
+        unique_together = [['user', 'role']]
+
+    def __str__(self):
+        return f"{self.user.email} → {self.role.name}"

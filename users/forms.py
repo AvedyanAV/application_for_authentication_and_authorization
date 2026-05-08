@@ -65,7 +65,7 @@ class UserRegistrationForm(UserCreationForm):
         return user
 
 
-class UserLoginForm(forms.Form):  # ← Наследуемся от forms.Form, НЕ от ModelForm
+class UserLoginForm(forms.Form):
     """Форма входа в систему."""
 
     email = forms.EmailField(
@@ -86,7 +86,6 @@ class UserLoginForm(forms.Form):  # ← Наследуемся от forms.Form, 
     )
 
     def __init__(self, *args, **kwargs):
-        # Извлекаем request из kwargs перед вызовом super().__init__
         self.request = kwargs.pop('request', None)
         super().__init__(*args, **kwargs)
         self.user_cache = None
@@ -98,7 +97,6 @@ class UserLoginForm(forms.Form):  # ← Наследуемся от forms.Form, 
         password = cleaned_data.get('password')
 
         if email and password:
-            # Аутентификация через стандартный метод Django
             user = authenticate(
                 request=self.request,
                 email=email,
@@ -106,7 +104,6 @@ class UserLoginForm(forms.Form):  # ← Наследуемся от forms.Form, 
             )
 
             if user is None:
-                # Проверяем, есть ли пользователь с таким email
                 try:
                     inactive_user = User.objects.get(email=email)
                     if not inactive_user.is_active:
@@ -117,7 +114,6 @@ class UserLoginForm(forms.Form):  # ← Наследуемся от forms.Form, 
                 except User.DoesNotExist:
                     pass
 
-                # Общая ошибка
                 raise forms.ValidationError(
                     "Неверный email или пароль. Пожалуйста, попробуйте снова."
                 )

@@ -11,41 +11,57 @@
             margin: 50px auto;
             padding: 20px;
         }
-        h1 {
-            color: #333;
-        }
+        h1 { color: #333; }
         .profile-info {
             background-color: #f9f9f9;
             border: 1px solid #ddd;
             padding: 15px;
             border-radius: 5px;
         }
-        .profile-info p {
-            margin: 8px 0;
+        .profile-info p { margin: 8px 0; }
+        .roles {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
         }
+        .role-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-right: 4px;
+            background-color: #e0e0e0;
+        }
+        .role-admin { background-color: #ffd700; color: #333; }
+        .role-moderator { background-color: #87ceeb; color: #333; }
+        .role-user { background-color: #90ee90; color: #333; }
         .actions {
             margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .btn {
             display: inline-block;
             padding: 8px 16px;
-            margin-right: 10px;
             border-radius: 4px;
             text-decoration: none;
             color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
         }
-        .btn-edit {
-            background-color: #ffa500;
-        }
-        .btn-delete {
-            background-color: #ff4444;
-        }
-        .btn-logout {
-            background-color: #666;
-        }
-        a {
-            color: #0066cc;
-        }
+        .btn-edit { background-color: #ffa500; }
+        .btn-edit:hover { background-color: #e69500; }
+        .btn-delete { background-color: #ff4444; }
+        .btn-delete:hover { background-color: #cc0000; }
+        .btn-logout { background-color: #666; }
+        .btn-logout:hover { background-color: #555; }
+        .btn-users { background-color: #0066cc; }
+        .btn-users:hover { background-color: #0052a3; }
+        .btn-admin { background-color: #8e44ad; }
+        .btn-admin:hover { background-color: #7d3c98; }
+        a { color: #0066cc; }
     </style>
 </head>
 <body>
@@ -58,13 +74,36 @@
         {% if user.patronymic %}
             <p><strong>Отчество:</strong> {{ user.patronymic }}</p>
         {% endif %}
-        <p><strong>Дата регистрации:</strong> {{ user.date_joined|date:"d.m.Y H:i" }}</p>
+        <p><strong>Дата регистрации:</strong> {{ user.created_at|date:"d.m.Y H:i" }}</p>
+
+        {% if roles %}
+        <div class="roles">
+            <strong>Роли:</strong>
+            {% for role_name in roles %}
+                {% if role_name == 'Admin' %}
+                    <span class="role-badge role-admin">Admin</span>
+                {% elif role_name == 'Moderator' %}
+                    <span class="role-badge role-moderator">Moderator</span>
+                {% else %}
+                    <span class="role-badge role-user">{{ role_name }}</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
 
     <div class="actions">
-        <a href="{% url 'users:profile-update' %}" class="btn btn-edit">Редактировать</a>
-        <a href="{% url 'users:profile-delete' %}" class="btn btn-delete">Удалить аккаунт</a>
+        <a href="{% url 'users:profile-update' %}" class="btn btn-edit">✎ Редактировать</a>
+        <a href="{% url 'users:profile-delete' %}" class="btn btn-delete">✕ Удалить аккаунт</a>
         <a href="{% url 'users:logout' %}" class="btn btn-logout">Выйти</a>
+
+        {% if can_view_all_users %}
+            <a href="{% url 'users:user-list' %}" class="btn btn-users">👥 Список пользователей</a>
+        {% endif %}
+
+        {% if can_manage_roles %}
+            <a href="/admin/users/role/" class="btn btn-admin">⚙ Управление ролями</a>
+        {% endif %}
     </div>
 </body>
 </html>

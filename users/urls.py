@@ -11,4 +11,6 @@ urlpatterns = [
     path('profile/', views.ProfileView.as_view(), name='profile'),
     path('profile/update/', views.UpdateProfileView.as_view(), name='profile-update'),
     path('profile/delete/', views.DeleteAccountView.as_view(), name='profile-delete'),
+
+    path('users/', views.UserListView.as_view(), name='user-list'),
 ]

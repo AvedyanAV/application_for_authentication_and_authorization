@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список пользователей</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #0066cc;
+            padding-bottom: 10px;
+        }
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .user-table th {
+            background-color: #0066cc;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        .user-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        .user-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        .status-active {
+            color: green;
+            font-weight: bold;
+        }
+        .status-inactive {
+            color: red;
+            font-weight: bold;
+        }
+        .role-badge {
+            display: inline-block;
+            background-color: #e0e0e0;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-right: 4px;
+            white-space: nowrap;
+        }
+        .role-admin {
+            background-color: #ffd700;
+            color: #333;
+        }
+        .role-moderator {
+            background-color: #87ceeb;
+            color: #333;
+        }
+        .role-user {
+            background-color: #90ee90;
+            color: #333;
+        }
+        .nav {
+            margin-bottom: 20px;
+        }
+        .nav a {
+            color: #0066cc;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+        .nav a:hover {
+            text-decoration: underline;
+        }
+        .count {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .deleted {
+            color: #999;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="{% url 'users:profile' %}">← Мой профиль</a>
+        <a href="{% url 'users:logout' %}">Выйти</a>
+    </div>
+
+    <h1>Список пользователей</h1>
+    
+    <p class="count">
+        Всего пользователей: {{ users|length }}
+        | Активных: <span class="status-active">{{ active_count }}</span>
+        | Неактивных: <span class="status-inactive">{{ inactive_count }}</span>
+    </p>
+
+    <table class="user-table">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Имя</th>
+                <th>Фамилия</th>
+                <th>Отчество</th>
+                <th>Статус</th>
+                <th>Роли</th>
+                <th>Дата регистрации</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr {% if not user.is_active %}class="deleted"{% endif %}>
+                <td>
+                    {{ user.email }}
+                    {% if not user.is_active %}
+                        <br><small>(удалён)</small>
+                    {% endif %}
+                </td>
+                <td>{{ user.first_name }}</td>
+                <td>{{ user.last_name }}</td>
+                <td>{{ user.patronymic|default:"—" }}</td>
+                <td>
+                    {% if user.is_active %}
+                        <span class="status-active">● Активен</span>
+                    {% else %}
+                        <span class="status-inactive">● Неактивен</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% for user_role in user.user_roles.all %}
+                        {% if user_role.role.name == 'Admin' %}
+                            <span class="role-badge role-admin">Admin</span>
+                        {% elif user_role.role.name == 'Moderator' %}
+                            <span class="role-badge role-moderator">Moderator</span>
+                        {% else %}
+                            <span class="role-badge role-user">{{ user_role.role.name }}</span>
+                        {% endif %}
+                    {% empty %}
+                        <span style="color: #999;">Нет ролей</span>
+                    {% endfor %}
+                </td>
+                <td>{{ user.created_at|date:"d.m.Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 20px; color: #999;">
+                    Нет зарегистрированных пользователей.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p style="margin-top: 20px;">
+        <a href="{% url 'users:profile' %}">← Назад к профилю</a>
+    </p>
+</body>
+</html>
